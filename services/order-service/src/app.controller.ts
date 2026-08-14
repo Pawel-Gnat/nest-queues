@@ -1,9 +1,9 @@
 import { Controller, Inject } from "@nestjs/common";
 import { ClientProxy, MessagePattern, Payload } from "@nestjs/microservices";
 import type { Order } from "@repo/api/schemas";
+import { NOTIFICATION_CLIENT, PAYMENT_CLIENT } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
-import { NOTIFICATION_CLIENT, PAYMENT_CLIENT } from "./constants";
 
 @Controller()
 export class AppController {

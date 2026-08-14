@@ -1,18 +1,13 @@
 import { Module } from "@nestjs/common";
-import { ClientsModule, Transport } from "@nestjs/microservices";
-import { QUEUES, rmqOptions } from "@repo/rabbitmq";
+import { NOTIFICATION_CLIENT, registerRmqClients } from "@repo/nestjs";
+import { QUEUES } from "@repo/rabbitmq";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { NOTIFICATION_CLIENT } from "./constants";
 
 @Module({
 	imports: [
-		ClientsModule.register([
-			{
-				name: NOTIFICATION_CLIENT,
-				transport: Transport.RMQ,
-				options: rmqOptions(QUEUES.notification),
-			},
+		registerRmqClients([
+			{ name: NOTIFICATION_CLIENT, queue: QUEUES.notification },
 		]),
 	],
 	controllers: [AppController],

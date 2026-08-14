@@ -1,5 +1,5 @@
 {
-	"name": "@repo/rabbitmq",
+	"name": "@repo/nestjs",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -16,6 +16,12 @@
 		"lint": "biome check .",
 		"format": "biome check --write .",
 		"check-types": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@nestjs/common": "catalog:",
+		"@nestjs/core": "catalog:",
+		"@nestjs/microservices": "catalog:",
+		"@repo/rabbitmq": "workspace:*"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "catalog:",

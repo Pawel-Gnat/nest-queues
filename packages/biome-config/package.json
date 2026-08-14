@@ -4,6 +4,7 @@
 	"private": true,
 	"type": "module",
 	"exports": {
-		"./biome": "./biome.json"
+		"./biome": "./biome.json",
+		"./nest": "./nest.json"
 	}
 }

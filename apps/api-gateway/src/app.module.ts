@@ -1,19 +1,10 @@
 import { Module } from "@nestjs/common";
-import { ClientsModule, Transport } from "@nestjs/microservices";
-import { QUEUES, rmqOptions } from "@repo/rabbitmq";
+import { ORDER_CLIENT, registerRmqClients } from "@repo/nestjs";
+import { QUEUES } from "@repo/rabbitmq";
 import { AppController } from "./app.controller";
-import { ORDER_CLIENT } from "./constants";
 
 @Module({
-	imports: [
-		ClientsModule.register([
-			{
-				name: ORDER_CLIENT,
-				transport: Transport.RMQ,
-				options: rmqOptions(QUEUES.order),
-			},
-		]),
-	],
+	imports: [registerRmqClients([{ name: ORDER_CLIENT, queue: QUEUES.order }])],
 	controllers: [AppController],
 	providers: [],
 })
