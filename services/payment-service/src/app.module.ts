@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
+import { QUEUES, rmqOptions } from "@repo/rabbitmq";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { NOTIFICATION_CLIENT } from "./constants";
@@ -10,11 +11,7 @@ import { NOTIFICATION_CLIENT } from "./constants";
 			{
 				name: NOTIFICATION_CLIENT,
 				transport: Transport.RMQ,
-				options: {
-					urls: ["amqp://guest:guest@localhost:5672"],
-					queue: "notification_queue",
-					queueOptions: { durable: true },
-				},
+				options: rmqOptions(QUEUES.notification),
 			},
 		]),
 	],

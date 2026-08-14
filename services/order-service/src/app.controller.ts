@@ -1,5 +1,7 @@
 import { Controller, Inject } from "@nestjs/common";
 import { ClientProxy, MessagePattern, Payload } from "@nestjs/microservices";
+import type { Order } from "@repo/api/schemas";
+import { EVENTS } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
 import { NOTIFICATION_CLIENT, PAYMENT_CLIENT } from "./constants";
 
@@ -12,13 +14,11 @@ export class AppController {
 		private readonly notificationClient: ClientProxy,
 	) {}
 
-	@MessagePattern("order_created")
-	handleOrderCreate(@Payload() order: any) {
+	@MessagePattern(EVENTS.order.created)
+	handleOrderCreate(@Payload() order: Order) {
 		this.appService.handleOrderCreate(order);
 
-		this.paymentClient.emit("process_payment", { orderId: order.id });
-		this.notificationClient.emit("send_order_notification", {
-			orderId: order.id,
-		});
+		this.paymentClient.emit(EVENTS.payment.process, order);
+		this.notificationClient.emit(EVENTS.notification.order, order);
 	}
 }

@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core";
-
 import { type MicroserviceOptions, Transport } from "@nestjs/microservices";
+import { QUEUES, rmqOptions } from "@repo/rabbitmq";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
@@ -8,11 +8,7 @@ async function bootstrap() {
 		AppModule,
 		{
 			transport: Transport.RMQ,
-			options: {
-				urls: ["amqp://guest:guest@localhost:5672"],
-				queue: "notification_queue",
-				queueOptions: { durable: true },
-			},
+			options: rmqOptions(QUEUES.notification),
 		},
 	);
 
