@@ -1,0 +1,8 @@
+services:
+  rabbitmq:
+    hostname: rabbitmq
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  rabbitmq_data:
