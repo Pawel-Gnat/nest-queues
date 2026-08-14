@@ -1,12 +1,14 @@
 {
 	"name": "queues",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"build": "turbo run build",
 		"dev": "turbo run dev",
 		"lint": "turbo run lint",
 		"format": "turbo run format",
 		"check-types": "turbo run check-types",
+		"diagram": "node scripts/generate-event-diagram.js",
 		"docker:up": "docker compose -f docker/docker-compose.yml up -d",
 		"docker:down": "docker compose -f docker/docker-compose.yml down",
 		"prepare": "node -e \"if (!process.env.CI) { require('child_process').execSync('lefthook install', { stdio: 'inherit' }) }\""
