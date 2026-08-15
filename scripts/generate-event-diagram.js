@@ -92,12 +92,12 @@ function analyzeWorkspace(kind) {
 		});
 
 		const consumes = [
-			...all.matchAll(/@MessagePattern\(\s*EVENTS\.(\w+)\.(\w+)/g),
+			...all.matchAll(/@(?:Message|Event)Pattern\(\s*EVENTS\.(\w+)\.(\w+)/g),
 		].map(([, group, key]) => ({ group, key }));
 
-		const publishes = [...all.matchAll(/\.emit\(\s*EVENTS\.(\w+)\.(\w+)/g)].map(
-			([, group, key]) => ({ group, key }),
-		);
+		const publishes = [
+			...all.matchAll(/\.(?:emit|send)\(\s*EVENTS\.(\w+)\.(\w+)/g),
+		].map(([, group, key]) => ({ group, key }));
 
 		packages.push({
 			kind,
