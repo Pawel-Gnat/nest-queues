@@ -6,6 +6,13 @@ export class AppService {
 	private readonly logger = new Logger(AppService.name);
 
 	handleProcessPayment(order: Order) {
-		this.logger.log(`Processing payment for order: ${JSON.stringify(order)}`);
+		this.logger.log(
+			`pid=${process.pid} processing payment for order: ${JSON.stringify(order)}`,
+		);
+	}
+
+	async simulateSlowWork() {
+		this.logger.log(`pid=${process.pid} working 3s (prefetch demo)`);
+		await new Promise((resolve) => setTimeout(resolve, 3000));
 	}
 }
