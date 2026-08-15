@@ -8,7 +8,7 @@ export const createTsdownConfig = ({
 	entry,
 	...overrides
 }: CreateTsdownConfigOptions) =>
-	defineConfig({
+	defineConfig((options) => ({
 		format: "esm",
 		target: "es2023",
 		outDir: "dist",
@@ -18,6 +18,7 @@ export const createTsdownConfig = ({
 		},
 		treeshake: true,
 		fixedExtension: false,
+		clean: !options.watch,
 		entry,
 		...overrides,
-	});
+	}));
