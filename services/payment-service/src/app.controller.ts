@@ -11,7 +11,7 @@ import { NOTIFICATION_CLIENT, settleRmqMessage } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
 
-/** POST /api/order with this cartId to send the message to payment_dlq. */
+/** POST /api/order with this cartId: 3 delayed retries, then payment_dlq. */
 export const REQUEUE_DEMO_CART_ID = "fail-requeue";
 
 @Controller()

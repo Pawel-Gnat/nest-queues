@@ -13,11 +13,14 @@ export function deadLetterArguments(dlq: string) {
 	};
 }
 
-export async function assertDurableQueue(name: string) {
+export async function assertDurableQueue(
+	name: string,
+	extra?: { arguments: Record<string, unknown> },
+) {
 	const connection = await connect(RABBITMQ_URL);
 	const channel = await connection.createChannel();
 
-	await channel.assertQueue(name, QUEUE_OPTIONS);
+	await channel.assertQueue(name, { ...QUEUE_OPTIONS, ...extra });
 
 	await channel.close();
 	await connection.close();

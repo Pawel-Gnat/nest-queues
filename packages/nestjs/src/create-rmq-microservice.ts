@@ -6,6 +6,8 @@ import {
 	dlqFor,
 	type QueueName,
 	type RmqOptionsExtra,
+	retryQueueArguments,
+	retryQueueFor,
 	rmqOptions,
 } from "@repo/rabbitmq";
 
@@ -15,6 +17,9 @@ export const createRmqMicroservice = async (
 	extra?: RmqOptionsExtra,
 ): Promise<INestMicroservice> => {
 	await assertDurableQueue(dlqFor(queue));
+	await assertDurableQueue(retryQueueFor(queue), {
+		arguments: retryQueueArguments(queue),
+	});
 
 	const app = await NestFactory.createMicroservice<MicroserviceOptions>(
 		module,
