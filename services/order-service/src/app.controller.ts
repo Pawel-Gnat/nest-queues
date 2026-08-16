@@ -1,5 +1,11 @@
 import { Controller, Inject } from "@nestjs/common";
-import { ClientProxy, EventPattern, Payload } from "@nestjs/microservices";
+import {
+	ClientProxy,
+	Ctx,
+	EventPattern,
+	Payload,
+	type RmqContext,
+} from "@nestjs/microservices";
 import type { Order, PaymentResult } from "@repo/api/schemas";
 import { NOTIFICATION_CLIENT, PAYMENT_CLIENT } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
@@ -18,7 +24,7 @@ export class AppController {
 	) {}
 
 	@EventPattern(EVENTS.order.created)
-	async handleOrderCreate(@Payload() order: Order) {
+	async handleOrderCreate(@Payload() order: Order, @Ctx() context: RmqContext) {
 		this.appService.handleOrderCreate(order);
 
 		this.notificationClient.emit(EVENTS.notification.order, order);
@@ -38,5 +44,7 @@ export class AppController {
 					: String(error),
 			);
 		}
+
+		context.getChannelRef().ack(context.getMessage());
 	}
 }

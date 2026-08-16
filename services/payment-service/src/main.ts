@@ -4,5 +4,5 @@ import { AppModule } from "./app.module";
 
 void createRmqMicroservice(AppModule, QUEUES.payment, {
 	noAck: false,
-	prefetchCount: 0,
+	prefetchCount: 1,
 });

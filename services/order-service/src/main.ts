@@ -2,4 +2,7 @@ import { createRmqMicroservice } from "@repo/nestjs";
 import { QUEUES } from "@repo/rabbitmq";
 import { AppModule } from "./app.module";
 
-void createRmqMicroservice(AppModule, QUEUES.order);
+void createRmqMicroservice(AppModule, QUEUES.order, {
+	noAck: false,
+	prefetchCount: 1,
+});
