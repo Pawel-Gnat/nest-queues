@@ -1,5 +1,5 @@
 import { connect } from "amqplib";
-import { QUEUE_OPTIONS, RABBITMQ_URL } from "./connection";
+import { QUEUE_OPTIONS, RABBITMQ_URL } from "./constants";
 import type { QueueName } from "./queues";
 
 export function dlqFor(queue: QueueName) {

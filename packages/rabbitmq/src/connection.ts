@@ -1,11 +1,8 @@
+import { QUEUE_OPTIONS, RABBITMQ_URL } from "./constants";
+import { deadLetterArguments, dlqFor } from "./dead-letter";
 import type { QueueName } from "./queues";
 
-export const RABBITMQ_URL =
-	process.env["RABBITMQ_URL"] ?? "amqp://guest:guest@localhost:5672";
-
-export const QUEUE_OPTIONS = {
-	durable: true,
-} as const;
+export { QUEUE_OPTIONS, RABBITMQ_URL } from "./constants";
 
 export type RmqOptionsExtra = {
 	noAck?: boolean;
@@ -19,11 +16,19 @@ export type RmqOptionsExtra = {
 
 export function rmqOptions(queue: QueueName, extra?: RmqOptionsExtra) {
 	const { queueOptions, ...rest } = extra ?? {};
+	const dlq = dlqFor(queue);
 
 	return {
 		urls: [RABBITMQ_URL],
 		queue,
-		queueOptions: { ...QUEUE_OPTIONS, ...queueOptions },
+		queueOptions: {
+			...QUEUE_OPTIONS,
+			...queueOptions,
+			arguments: {
+				...queueOptions?.arguments,
+				...deadLetterArguments(dlq),
+			},
+		},
 		persistent: true,
 		...rest,
 	};

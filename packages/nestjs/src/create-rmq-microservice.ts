@@ -3,7 +3,6 @@ import { NestFactory } from "@nestjs/core";
 import { type MicroserviceOptions, Transport } from "@nestjs/microservices";
 import {
 	assertDurableQueue,
-	deadLetterArguments,
 	dlqFor,
 	type QueueName,
 	type RmqOptionsExtra,
@@ -15,19 +14,13 @@ export const createRmqMicroservice = async (
 	queue: QueueName,
 	extra?: RmqOptionsExtra,
 ): Promise<INestMicroservice> => {
-	const dlq = dlqFor(queue);
-	await assertDurableQueue(dlq);
+	await assertDurableQueue(dlqFor(queue));
 
 	const app = await NestFactory.createMicroservice<MicroserviceOptions>(
 		module,
 		{
 			transport: Transport.RMQ,
-			options: rmqOptions(queue, {
-				...extra,
-				queueOptions: {
-					arguments: deadLetterArguments(dlq),
-				},
-			}),
+			options: rmqOptions(queue, extra),
 		},
 	);
 
