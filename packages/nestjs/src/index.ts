@@ -10,3 +10,4 @@ export {
 	type RmqClientConfig,
 	registerRmqClients,
 } from "./register-rmq-clients";
+export { settleRmqMessage } from "./settle-rmq-message";

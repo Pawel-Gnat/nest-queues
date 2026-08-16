@@ -7,7 +7,11 @@ import {
 	type RmqContext,
 } from "@nestjs/microservices";
 import type { Order, PaymentResult } from "@repo/api/schemas";
-import { NOTIFICATION_CLIENT, PAYMENT_CLIENT } from "@repo/nestjs";
+import {
+	NOTIFICATION_CLIENT,
+	PAYMENT_CLIENT,
+	settleRmqMessage,
+} from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
 import { firstValueFrom, TimeoutError, timeout } from "rxjs";
 import { AppService } from "./app.service";
@@ -24,27 +28,26 @@ export class AppController {
 	) {}
 
 	@EventPattern(EVENTS.order.created)
-	async handleOrderCreate(@Payload() order: Order, @Ctx() context: RmqContext) {
-		this.appService.handleOrderCreate(order);
+	handleOrderCreate(@Payload() order: Order, @Ctx() context: RmqContext) {
+		return settleRmqMessage(context, async () => {
+			this.appService.handleOrderCreate(order);
+			this.notificationClient.emit(EVENTS.notification.order, order);
 
-		this.notificationClient.emit(EVENTS.notification.order, order);
-
-		try {
-			const result = await firstValueFrom(
-				this.paymentClient
-					.send<PaymentResult>(EVENTS.payment.process, order)
-					.pipe(timeout(PAYMENT_RPC_TIMEOUT_MS)),
-			);
-			this.appService.handlePaymentResult(result);
-		} catch (error: unknown) {
-			this.appService.handlePaymentRpcError(
-				order,
-				error instanceof TimeoutError
-					? `timeout after ${PAYMENT_RPC_TIMEOUT_MS}ms`
-					: String(error),
-			);
-		}
-
-		context.getChannelRef().ack(context.getMessage());
+			try {
+				const result = await firstValueFrom(
+					this.paymentClient
+						.send<PaymentResult>(EVENTS.payment.process, order)
+						.pipe(timeout(PAYMENT_RPC_TIMEOUT_MS)),
+				);
+				this.appService.handlePaymentResult(result);
+			} catch (error: unknown) {
+				this.appService.handlePaymentRpcError(
+					order,
+					error instanceof TimeoutError
+						? `timeout after ${PAYMENT_RPC_TIMEOUT_MS}ms`
+						: String(error),
+				);
+			}
+		});
 	}
 }

@@ -23,7 +23,7 @@
 		"@repo/nestjs": "workspace:*",
 		"@repo/rabbitmq": "workspace:*",
 		"amqp-connection-manager": "^5.0.0",
-		"amqplib": "^2.0.1",
+		"amqplib": "catalog:",
 		"reflect-metadata": "catalog:",
 		"rxjs": "catalog:"
 	},

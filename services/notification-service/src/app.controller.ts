@@ -6,6 +6,7 @@ import {
 	type RmqContext,
 } from "@nestjs/microservices";
 import type { Order } from "@repo/api/schemas";
+import { settleRmqMessage } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
 
@@ -18,8 +19,9 @@ export class AppController {
 		@Payload() order: Order,
 		@Ctx() context: RmqContext,
 	) {
-		this.appService.handleSendOrderNotification(order);
-		context.getChannelRef().ack(context.getMessage());
+		return settleRmqMessage(context, () => {
+			this.appService.handleSendOrderNotification(order);
+		});
 	}
 
 	@EventPattern(EVENTS.notification.payment)
@@ -27,7 +29,8 @@ export class AppController {
 		@Payload() order: Order,
 		@Ctx() context: RmqContext,
 	) {
-		this.appService.handleSendPaymentNotification(order);
-		context.getChannelRef().ack(context.getMessage());
+		return settleRmqMessage(context, () => {
+			this.appService.handleSendPaymentNotification(order);
+		});
 	}
 }

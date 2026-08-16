@@ -17,6 +17,9 @@
 		"format": "biome check --write .",
 		"check-types": "tsc --noEmit"
 	},
+	"dependencies": {
+		"amqplib": "catalog:"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "catalog:",
 		"@repo/biome-config": "workspace:*",
