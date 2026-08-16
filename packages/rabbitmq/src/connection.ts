@@ -10,6 +10,7 @@ export const QUEUE_OPTIONS = {
 export type RmqOptionsExtra = {
 	noAck?: boolean;
 	prefetchCount?: number;
+	persistent?: boolean;
 };
 
 export function rmqOptions(queue: QueueName, extra?: RmqOptionsExtra) {
@@ -17,6 +18,7 @@ export function rmqOptions(queue: QueueName, extra?: RmqOptionsExtra) {
 		urls: [RABBITMQ_URL],
 		queue,
 		queueOptions: QUEUE_OPTIONS,
+		persistent: true,
 		...extra,
 	};
 }
