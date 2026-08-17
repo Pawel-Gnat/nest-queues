@@ -1,4 +1,4 @@
-import { Controller, UseInterceptors } from "@nestjs/common";
+import { Controller } from "@nestjs/common";
 import {
 	Ctx,
 	EventPattern,
@@ -6,12 +6,11 @@ import {
 	type RmqContext,
 } from "@nestjs/microservices";
 import type { Order } from "@repo/api/schemas";
-import { IdempotencyInterceptor, settleRmqMessage } from "@repo/nestjs";
+import { settleRmqMessage } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
 
 @Controller()
-@UseInterceptors(IdempotencyInterceptor)
 export class AppController {
 	constructor(private readonly appService: AppService) {}
 
@@ -20,9 +19,9 @@ export class AppController {
 		@Payload() order: Order,
 		@Ctx() context: RmqContext,
 	) {
-		return settleRmqMessage(context, () => {
-			this.appService.handleSendOrderNotification(order);
-		});
+		return settleRmqMessage(context, () =>
+			this.appService.handleSendOrderNotification(order),
+		);
 	}
 
 	@EventPattern(EVENTS.notification.payment)
@@ -30,8 +29,8 @@ export class AppController {
 		@Payload() order: Order,
 		@Ctx() context: RmqContext,
 	) {
-		return settleRmqMessage(context, () => {
-			this.appService.handleSendPaymentNotification(order);
-		});
+		return settleRmqMessage(context, () =>
+			this.appService.handleSendPaymentNotification(order),
+		);
 	}
 }

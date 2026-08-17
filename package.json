@@ -5,6 +5,8 @@
 	"scripts": {
 		"build": "turbo run build",
 		"dev": "turbo run dev",
+		"dev:rest": "turbo run dev --filter=!payment-service",
+		"dev:payment": "turbo run dev --filter=payment-service",
 		"lint": "turbo run lint",
 		"format": "turbo run format",
 		"check-types": "turbo run check-types",

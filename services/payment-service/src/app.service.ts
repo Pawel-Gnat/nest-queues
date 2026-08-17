@@ -1,7 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common";
-import type { Order, PaymentResult } from "@repo/api/schemas";
+import type { Order } from "@repo/api/schemas";
 import { IdempotencyStore } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
+
+/** POST /api/order with this cartId to send payment to DLQ after 3 throws. */
+export const DLQ_DEMO_CART_ID = "dlq";
 
 @Injectable()
 export class AppService {
@@ -10,13 +13,17 @@ export class AppService {
 	constructor(private readonly idempotency: IdempotencyStore) {}
 
 	async charge(order: Order): Promise<"duplicate" | "charged"> {
+		if (order.cartId === DLQ_DEMO_CART_ID) {
+			this.logger.error(
+				`pid=${process.pid} demo DLQ — throwing for cart ${order.cartId}`,
+			);
+			throw new Error(`demo DLQ for cart ${order.cartId}`);
+		}
+
 		const claimed = await this.idempotency.claim(
 			EVENTS.payment.process,
 			order.id,
-			{
-				ok: true,
-				orderId: order.id,
-			} satisfies PaymentResult,
+			true,
 		);
 
 		if (!claimed) {
@@ -27,15 +34,13 @@ export class AppService {
 		}
 
 		this.logger.log(
+			`pid=${process.pid} charging order ${order.id} (kill the process here to test retry)`,
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10_000));
+
+		this.logger.log(
 			`pid=${process.pid} charged order ${order.id}: ${JSON.stringify(order)}`,
 		);
 		return "charged";
-	}
-
-	async simulateSlowWork() {
-		this.logger.log(
-			`pid=${process.pid} working 10s (kill the process here to test retry)`,
-		);
-		await new Promise((resolve) => setTimeout(resolve, 10_000));
 	}
 }
