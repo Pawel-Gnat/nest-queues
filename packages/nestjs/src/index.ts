@@ -6,6 +6,9 @@ export {
 	PAYMENT_CLIENT,
 } from "./clients";
 export { createRmqMicroservice } from "./create-rmq-microservice";
+export { IdempotencyModule } from "./idempotency/idempotency.module";
+export { IdempotencyInterceptor } from "./idempotency/interceptors/idempotency.interceptor";
+export { IdempotencyStore } from "./idempotency/store/idempotency.store";
 export {
 	type RmqClientConfig,
 	registerRmqClients,

@@ -1,4 +1,4 @@
-import { Controller, Inject } from "@nestjs/common";
+import { Controller, Inject, UseInterceptors } from "@nestjs/common";
 import {
 	ClientProxy,
 	Ctx,
@@ -8,6 +8,7 @@ import {
 } from "@nestjs/microservices";
 import type { Order, PaymentResult } from "@repo/api/schemas";
 import {
+	IdempotencyInterceptor,
 	NOTIFICATION_CLIENT,
 	PAYMENT_CLIENT,
 	settleRmqMessage,
@@ -19,6 +20,7 @@ import { AppService } from "./app.service";
 const PAYMENT_RPC_TIMEOUT_MS = 5000;
 
 @Controller()
+@UseInterceptors(IdempotencyInterceptor)
 export class AppController {
 	constructor(
 		private readonly appService: AppService,

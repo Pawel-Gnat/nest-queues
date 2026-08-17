@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import {
+	IdempotencyModule,
 	NOTIFICATION_CLIENT,
 	PAYMENT_CLIENT,
 	registerRmqClients,
@@ -10,6 +11,7 @@ import { AppService } from "./app.service";
 
 @Module({
 	imports: [
+		IdempotencyModule,
 		registerRmqClients([
 			{ name: PAYMENT_CLIENT, queue: QUEUES.payment },
 			{ name: NOTIFICATION_CLIENT, queue: QUEUES.notification },

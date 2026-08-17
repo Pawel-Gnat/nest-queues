@@ -11,8 +11,10 @@
 		{
 			"includes": [
 				"src/**/*.controller.ts",
+				"src/**/*.interceptor.ts",
 				"src/**/*.module.ts",
 				"src/**/*.service.ts",
+				"src/**/*.store.ts",
 				"src/**/*.strategy.ts"
 			],
 			"linter": {

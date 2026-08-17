@@ -1,5 +1,5 @@
 {
-	"name": "@repo/nestjs",
+	"name": "@repo/redis",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -18,13 +18,7 @@
 		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@nestjs/common": "catalog:",
-		"@nestjs/core": "catalog:",
-		"@nestjs/microservices": "catalog:",
-		"@repo/rabbitmq": "workspace:*",
-		"@repo/redis": "workspace:*",
-		"ioredis": "catalog:",
-		"rxjs": "catalog:"
+		"ioredis": "catalog:"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "catalog:",

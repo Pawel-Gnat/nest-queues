@@ -10,3 +10,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+  redis:
+    container_name: queues-redis
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'

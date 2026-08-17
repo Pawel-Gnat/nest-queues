@@ -1,4 +1,4 @@
-import { Controller, Inject } from "@nestjs/common";
+import { Controller, Inject, UseInterceptors } from "@nestjs/common";
 import {
 	ClientProxy,
 	Ctx,
@@ -7,14 +7,16 @@ import {
 	type RmqContext,
 } from "@nestjs/microservices";
 import type { Order, PaymentResult } from "@repo/api/schemas";
-import { NOTIFICATION_CLIENT, settleRmqMessage } from "@repo/nestjs";
+import {
+	IdempotencyInterceptor,
+	NOTIFICATION_CLIENT,
+	settleRmqMessage,
+} from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
 
-/** POST /api/order with this cartId: 3 delayed retries, then payment_dlq. */
-export const REQUEUE_DEMO_CART_ID = "fail-requeue";
-
 @Controller()
+@UseInterceptors(IdempotencyInterceptor)
 export class AppController {
 	constructor(
 		private readonly appService: AppService,
@@ -28,10 +30,8 @@ export class AppController {
 		@Ctx() context: RmqContext,
 	): Promise<PaymentResult> {
 		return settleRmqMessage(context, async () => {
-			this.appService.handleProcessPayment(order);
-
-			if (order.cartId === REQUEUE_DEMO_CART_ID) {
-				throw new Error(`Payment failed for cart ${order.cartId}`);
+			if ((await this.appService.charge(order)) === "duplicate") {
+				return { ok: true, orderId: order.id };
 			}
 
 			await this.appService.simulateSlowWork();
