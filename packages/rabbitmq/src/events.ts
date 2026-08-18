@@ -1,17 +1,13 @@
 export const EVENTS = {
-	order: {
-		created: "order_created",
+	project: {
+		created: "project_created",
 	},
-	payment: {
-		process: "process_payment",
-	},
-	notification: {
-		order: "send_order_notification",
-		payment: "send_payment_notification",
+	task: {
+		create: "create_tasks",
+		created: "task_created",
 	},
 } as const;
 
 export type EventName =
-	| (typeof EVENTS.order)[keyof typeof EVENTS.order]
-	| (typeof EVENTS.payment)[keyof typeof EVENTS.payment]
-	| (typeof EVENTS.notification)[keyof typeof EVENTS.notification];
+	| (typeof EVENTS.project)[keyof typeof EVENTS.project]
+	| (typeof EVENTS.task)[keyof typeof EVENTS.task];

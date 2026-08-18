@@ -35,7 +35,7 @@ classes: {
   service: {
     shape: hexagon
   }
-  topic: {
+  exchange: {
     shape: hexagon
     style: {
       fill: "#e0e7ff"
@@ -70,25 +70,30 @@ gateway: api-gateway {
 }
 
 rmq: RabbitMQ {
-  topic: "orders.topic" {
-    class: [topic]
+  exchanges: Exchanges {
+    default: "amq.default\n(direct)" {
+      class: [exchange]
+    }
+    topic: "projects.topic\n(topic)" {
+      class: [exchange]
+    }
   }
 
-  order: "order (quorum)" {
-    q: order_queue {
+  project: "project (quorum)" {
+    q: project_queue {
       class: [workq]
     }
-    svc: order-service {
+    svc: project-service {
       class: [service]
     }
     retry: "delayed retry\n5s × 3" {
       class: [delay]
     }
-    dead: order_dlq {
+    dead: project_dlq {
       class: [deadq]
     }
 
-    q -> svc: consume order_created {
+    q -> svc: consume project_created {
       class: [happy]
     }
     q -> retry: reject requeue {
@@ -102,21 +107,21 @@ rmq: RabbitMQ {
     }
   }
 
-  payment: "payment (quorum)" {
-    q: payment_queue {
+  task: "task (quorum)" {
+    q: task_queue {
       class: [workq]
     }
-    svc: payment-service {
+    svc: task-service {
       class: [service]
     }
     retry: "delayed retry\n5s × 3" {
       class: [delay]
     }
-    dead: payment_dlq {
+    dead: task_dlq {
       class: [deadq]
     }
 
-    q -> svc: consume process_payment {
+    q -> svc: consume create_tasks {
       class: [happy]
     }
     q -> retry: reject requeue {
@@ -144,7 +149,7 @@ rmq: RabbitMQ {
       class: [deadq]
     }
 
-    q -> svc: "consume order_created\nconsume send_payment_notification" {
+    q -> svc: "consume project_created\nconsume task_created" {
       class: [happy]
     }
     q -> retry: reject requeue {
@@ -159,31 +164,31 @@ rmq: RabbitMQ {
   }
 }
 
-client -> gateway: POST /api/order {
+client -> gateway: POST /api/project {
   class: [happy]
 }
 
-gateway -> rmq.order.q: emit order_created {
+gateway -> rmq.exchanges.default: emit project_created {
+  class: [happy]
+}
+rmq.exchanges.default -> rmq.project.q: rk=project_queue {
   class: [happy]
 }
 
-rmq.order.svc -> rmq.topic: "publishTopic order.created\npattern=order_created" {
+rmq.project.svc -> rmq.exchanges.topic: "publishTopic project.created\npattern=project_created" {
   class: [happy]
 }
-rmq.order.svc -> rmq.topic: "publishTopic payment.process\npattern=process_payment" {
-  class: [happy]
-}
-
-rmq.topic -> rmq.payment.q: bind payment.process {
-  class: [happy]
-}
-rmq.topic -> rmq.notification.q: bind order.* {
-  class: [happy]
-}
-rmq.topic -> rmq.notification.q: bind payment.completed {
+rmq.project.svc -> rmq.exchanges.topic: "publishTopic task.create\npattern=create_tasks" {
   class: [happy]
 }
 
-rmq.payment.svc -> rmq.topic: "publishTopic payment.completed\npattern=send_payment_notification" {
+rmq.exchanges.topic -> rmq.task.q: bind task.create {
+  class: [happy]
+}
+rmq.exchanges.topic -> rmq.notification.q: bind "*.created" {
+  class: [happy]
+}
+
+rmq.task.svc -> rmq.exchanges.topic: "publishTopic task.created\npattern=task_created" {
   class: [happy]
 }

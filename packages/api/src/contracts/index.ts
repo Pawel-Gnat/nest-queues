@@ -1,7 +1,7 @@
-import { createOrderContract } from "./order.contract";
+import { createProjectContract } from "./project.contract";
 
 export const rpcContract = {
-	order: {
-		createOrder: createOrderContract,
+	project: {
+		createProject: createProjectContract,
 	},
 };

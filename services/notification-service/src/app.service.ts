@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
-import type { Order } from "@repo/api/schemas";
-import { IdempotencyStore } from "@repo/nestjs";
+import type { Project, Task } from "@repo/api/schemas";
+import { IdempotencyStore, sleep } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
 
 @Injectable()
@@ -9,29 +9,31 @@ export class AppService {
 
 	constructor(private readonly idempotency: IdempotencyStore) {}
 
-	async handleSendOrderNotification(order: Order) {
-		await this.sendOnce(EVENTS.notification.order, order, () => {
+	async handleProjectCreated(project: Project) {
+		await this.saveOnce(EVENTS.project.created, project.id, () => {
 			this.logger.log(
-				`Sending order notification for order: ${JSON.stringify(order)}`,
+				`saved project notification ${project.id}: ${JSON.stringify(project)}`,
 			);
 		});
 	}
 
-	async handleSendPaymentNotification(order: Order) {
-		await this.sendOnce(EVENTS.notification.payment, order, () => {
+	async handleTaskCreated(task: Task) {
+		await this.saveOnce(EVENTS.task.created, task.id, () => {
 			this.logger.log(
-				`Sending payment notification for order: ${JSON.stringify(order)}`,
+				`saved task notification ${task.id}: ${JSON.stringify(task)}`,
 			);
 		});
 	}
 
-	private async sendOnce(pattern: string, order: Order, send: () => void) {
-		const claimed = await this.idempotency.claim(pattern, order.id, true);
+	private async saveOnce(pattern: string, id: string, save: () => void) {
+		await sleep();
+
+		const claimed = await this.idempotency.claim(pattern, id, true);
 		if (!claimed) {
-			this.logger.warn(`skipped duplicate ${pattern} ${order.id}`);
+			this.logger.warn(`skipped duplicate ${pattern} ${id}`);
 			return;
 		}
 
-		send();
+		save();
 	}
 }

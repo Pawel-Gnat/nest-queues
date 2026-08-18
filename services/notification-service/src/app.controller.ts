@@ -5,7 +5,7 @@ import {
 	Payload,
 	type RmqContext,
 } from "@nestjs/microservices";
-import type { Order } from "@repo/api/schemas";
+import type { Project, Task } from "@repo/api/schemas";
 import { settleRmqMessage } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
@@ -14,20 +14,20 @@ import { AppService } from "./app.service";
 export class AppController {
 	constructor(private readonly appService: AppService) {}
 
-	@EventPattern(EVENTS.order.created)
-	handleOrderCreated(@Payload() order: Order, @Ctx() context: RmqContext) {
-		return settleRmqMessage(context, () =>
-			this.appService.handleSendOrderNotification(order),
-		);
-	}
-
-	@EventPattern(EVENTS.notification.payment)
-	handleSendPaymentNotification(
-		@Payload() order: Order,
+	@EventPattern(EVENTS.project.created)
+	handleProjectCreated(
+		@Payload() project: Project,
 		@Ctx() context: RmqContext,
 	) {
 		return settleRmqMessage(context, () =>
-			this.appService.handleSendPaymentNotification(order),
+			this.appService.handleProjectCreated(project),
+		);
+	}
+
+	@EventPattern(EVENTS.task.created)
+	handleTaskCreated(@Payload() task: Task, @Ctx() context: RmqContext) {
+		return settleRmqMessage(context, () =>
+			this.appService.handleTaskCreated(task),
 		);
 	}
 }

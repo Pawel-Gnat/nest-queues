@@ -1,6 +1,6 @@
-# RabbitMQ event flow — client → last worker, with exchanges, retry, DLQ
-# Render: pnpm diagram
-# Watch:  d2 -w docs/event-flow.d2 docs/event-flow.svg
+# RabbitMQ fanout flow — comparison only, not what the code uses
+# Render: pnpm diagram-fanout
+# Watch:  d2 -w docs/event-flow-fanout.d2 docs/event-flow-fanout.svg
 
 vars: {
   d2-config: {
@@ -74,26 +74,26 @@ rmq: RabbitMQ {
     default: "amq.default\n(direct)" {
       class: [exchange]
     }
-    fanout: "orders.fanout\n(fanout)" {
+    fanout: "projects.fanout\n(fanout)" {
       class: [exchange]
     }
   }
 
-  order: "order (quorum)" {
-    q: order_queue {
+  project: "project (quorum)" {
+    q: project_queue {
       class: [workq]
     }
-    svc: order-service {
+    svc: project-service {
       class: [service]
     }
     retry: "delayed retry\n5s × 3" {
       class: [delay]
     }
-    dead: order_dlq {
+    dead: project_dlq {
       class: [deadq]
     }
 
-    q -> svc: consume order_created {
+    q -> svc: consume project_created {
       class: [happy]
     }
     q -> retry: reject requeue {
@@ -102,26 +102,26 @@ rmq: RabbitMQ {
     retry -> q: redeliver {
       class: [retry]
     }
-    q -> dead: "DLE amq.default\nrk=order_dlq" {
+    q -> dead: "DLE amq.default\nrk=project_dlq" {
       class: [dlq]
     }
   }
 
-  payment: "payment (quorum)" {
-    q: payment_queue {
+  task: "task (quorum)" {
+    q: task_queue {
       class: [workq]
     }
-    svc: payment-service {
+    svc: task-service {
       class: [service]
     }
     retry: "delayed retry\n5s × 3" {
       class: [delay]
     }
-    dead: payment_dlq {
+    dead: task_dlq {
       class: [deadq]
     }
 
-    q -> svc: consume order_created {
+    q -> svc: consume project_created {
       class: [happy]
     }
     q -> retry: reject requeue {
@@ -130,7 +130,7 @@ rmq: RabbitMQ {
     retry -> q: redeliver {
       class: [retry]
     }
-    q -> dead: "DLE amq.default\nrk=payment_dlq" {
+    q -> dead: "DLE amq.default\nrk=task_dlq" {
       class: [dlq]
     }
   }
@@ -149,7 +149,7 @@ rmq: RabbitMQ {
       class: [deadq]
     }
 
-    q -> svc: "consume order_created\nconsume send_payment_notification" {
+    q -> svc: "consume project_created\nconsume task_created" {
       class: [happy]
     }
     q -> retry: reject requeue {
@@ -164,28 +164,28 @@ rmq: RabbitMQ {
   }
 }
 
-client -> gateway: POST /api/order {
+client -> gateway: POST /api/project {
   class: [happy]
 }
 
-gateway -> rmq.exchanges.default: emit order_created {
+gateway -> rmq.exchanges.default: emit project_created {
   class: [happy]
 }
-rmq.exchanges.default -> rmq.order.q: rk=order_queue {
+rmq.exchanges.default -> rmq.project.q: rk=project_queue {
   class: [happy]
 }
 
-rmq.order.svc -> rmq.exchanges.fanout: publishFanout\norder_created {
+rmq.project.svc -> rmq.exchanges.fanout: publishFanout\nproject_created {
   class: [happy]
 }
-rmq.exchanges.fanout -> rmq.payment.q: bind "" {
+rmq.exchanges.fanout -> rmq.task.q: bind "" {
   class: [happy]
 }
 rmq.exchanges.fanout -> rmq.notification.q: bind "" {
   class: [happy]
 }
 
-rmq.payment.svc -> rmq.exchanges.default: emit send_payment_notification {
+rmq.task.svc -> rmq.exchanges.default: emit task_created {
   class: [happy]
 }
 rmq.exchanges.default -> rmq.notification.q: rk=notification_queue {

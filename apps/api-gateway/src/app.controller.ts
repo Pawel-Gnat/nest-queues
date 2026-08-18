@@ -1,26 +1,36 @@
-import { randomUUID } from "node:crypto";
 import { Body, Controller, Inject, Post } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
-import type { Order, OrderPayload, OrderResponse } from "@repo/api/schemas";
-import { ORDER_PUBLISHER } from "@repo/nestjs";
+import type {
+	Project,
+	ProjectPayload,
+	ProjectResponse,
+} from "@repo/api/schemas";
+import { PROJECT_PUBLISHER } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
+import { randomUUID } from "crypto";
 
 @Controller()
 export class AppController {
-	constructor(@Inject(ORDER_PUBLISHER) private readonly orders: ClientProxy) {}
+	constructor(
+		@Inject(PROJECT_PUBLISHER) private readonly projects: ClientProxy,
+	) {}
 
-	@Post("order")
-	createOrder(@Body() payload: OrderPayload): OrderResponse {
-		const order: Order = {
-			id: randomUUID(),
-			cartId: payload.cartId,
-			userId: "anonymous",
-			status: "pending",
+	@Post("project")
+	createProject(@Body() payload: ProjectPayload): ProjectResponse {
+		const id = randomUUID();
+		const project: Project = {
+			id,
+			name: payload.name,
+			tasks: payload.tasks.map((task) => ({
+				id: randomUUID(),
+				projectId: id,
+				title: task.title,
+			})),
 			createdAt: new Date().toISOString(),
 		};
 
-		this.orders.emit(EVENTS.order.created, order);
+		this.projects.emit(EVENTS.project.created, project);
 
-		return { data: order };
+		return { data: project };
 	}
 }

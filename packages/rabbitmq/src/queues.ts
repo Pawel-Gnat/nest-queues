@@ -1,6 +1,6 @@
 export const QUEUES = {
-	order: "order_queue",
-	payment: "payment_queue",
+	project: "project_queue",
+	task: "task_queue",
 	notification: "notification_queue",
 } as const;
 

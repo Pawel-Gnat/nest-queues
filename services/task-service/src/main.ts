@@ -2,4 +2,4 @@ import { createRmqMicroserviceWorker } from "@repo/nestjs";
 import { QUEUES } from "@repo/rabbitmq";
 import { AppModule } from "./app.module";
 
-void createRmqMicroserviceWorker(AppModule, QUEUES.order, 1);
+void createRmqMicroserviceWorker(AppModule, QUEUES.task, 1);
