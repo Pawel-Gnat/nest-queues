@@ -1,53 +1,24 @@
-import { Controller, Inject } from "@nestjs/common";
+import { Controller } from "@nestjs/common";
 import {
-	ClientProxy,
 	Ctx,
 	EventPattern,
 	Payload,
 	type RmqContext,
 } from "@nestjs/microservices";
-import type { Order, PaymentResult } from "@repo/api/schemas";
-import {
-	NOTIFICATION_CLIENT,
-	PAYMENT_CLIENT,
-	settleRmqMessage,
-} from "@repo/nestjs";
-import { EVENTS } from "@repo/rabbitmq";
-import { firstValueFrom, TimeoutError, timeout } from "rxjs";
+import type { Order } from "@repo/api/schemas";
+import { settleRmqMessage } from "@repo/nestjs";
+import { EVENTS, publishFanout } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
-
-const PAYMENT_RPC_TIMEOUT_MS = 15_000;
 
 @Controller()
 export class AppController {
-	constructor(
-		private readonly appService: AppService,
-		@Inject(PAYMENT_CLIENT) private readonly paymentClient: ClientProxy,
-		@Inject(NOTIFICATION_CLIENT)
-		private readonly notificationClient: ClientProxy,
-	) {}
+	constructor(private readonly appService: AppService) {}
 
 	@EventPattern(EVENTS.order.created)
 	handleOrderCreate(@Payload() order: Order, @Ctx() context: RmqContext) {
 		return settleRmqMessage(context, async () => {
 			this.appService.handleOrderCreate(order);
-			this.notificationClient.emit(EVENTS.notification.order, order);
-
-			try {
-				const result = await firstValueFrom(
-					this.paymentClient
-						.send<PaymentResult>(EVENTS.payment.process, order)
-						.pipe(timeout(PAYMENT_RPC_TIMEOUT_MS)),
-				);
-				this.appService.handlePaymentResult(result);
-			} catch (error: unknown) {
-				this.appService.handlePaymentRpcError(
-					order,
-					error instanceof TimeoutError
-						? `timeout after ${PAYMENT_RPC_TIMEOUT_MS}ms`
-						: String(error),
-				);
-			}
+			await publishFanout(EVENTS.order.created, order);
 		});
 	}
 }

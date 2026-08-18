@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 import {
 	IdempotencyModule,
-	NOTIFICATION_CLIENT,
-	registerRmqClients,
+	NOTIFICATION_PUBLISHER,
+	registerRmqPublishers,
 } from "@repo/nestjs";
 import { QUEUES } from "@repo/rabbitmq";
 import { AppController } from "./app.controller";
@@ -11,8 +11,8 @@ import { AppService } from "./app.service";
 @Module({
 	imports: [
 		IdempotencyModule,
-		registerRmqClients([
-			{ name: NOTIFICATION_CLIENT, queue: QUEUES.notification },
+		registerRmqPublishers([
+			{ name: NOTIFICATION_PUBLISHER, queue: QUEUES.notification },
 		]),
 	],
 	controllers: [AppController],

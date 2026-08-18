@@ -3,7 +3,7 @@ name: queues
 services:
   rabbitmq:
     container_name: queues-rabbitmq
-    image: rabbitmq:4-management
+    image: rabbitmq:4.3-management
     ports:
       - '5672:5672' # AMQP protocol port
       - '15672:15672' # Management UI port
@@ -14,4 +14,4 @@ services:
     container_name: queues-redis
     image: redis:7-alpine
     ports:
-      - '6379:6379'
+      - '6380:6380'

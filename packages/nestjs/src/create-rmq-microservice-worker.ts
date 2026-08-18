@@ -2,30 +2,23 @@ import type { INestMicroservice } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { type MicroserviceOptions, Transport } from "@nestjs/microservices";
 import {
-	assertDurableQueue,
-	dlqFor,
+	ensureBrokerQueues,
 	type QueueName,
-	type RmqOptionsExtra,
-	retryQueueArguments,
-	retryQueueFor,
-	rmqOptions,
+	rmqWorkerOptions,
 } from "@repo/rabbitmq";
 
-export const createRmqMicroservice = async (
+export const createRmqMicroserviceWorker = async (
 	module: Parameters<typeof NestFactory.createMicroservice>[0],
 	queue: QueueName,
-	extra?: RmqOptionsExtra,
+	prefetchCount = 1,
 ): Promise<INestMicroservice> => {
-	await assertDurableQueue(dlqFor(queue));
-	await assertDurableQueue(retryQueueFor(queue), {
-		arguments: retryQueueArguments(queue),
-	});
+	await ensureBrokerQueues();
 
 	const app = await NestFactory.createMicroservice<MicroserviceOptions>(
 		module,
 		{
 			transport: Transport.RMQ,
-			options: rmqOptions(queue, extra),
+			options: rmqWorkerOptions(queue, prefetchCount),
 		},
 	);
 

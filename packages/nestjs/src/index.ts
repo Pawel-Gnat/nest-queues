@@ -1,15 +1,15 @@
-export {
-	CLIENTS,
-	type ClientName,
-	NOTIFICATION_CLIENT,
-	ORDER_CLIENT,
-	PAYMENT_CLIENT,
-} from "./clients";
-export { createRmqMicroservice } from "./create-rmq-microservice";
+export { createRmqMicroserviceWorker } from "./create-rmq-microservice-worker";
 export { IdempotencyModule } from "./idempotency/idempotency.module";
 export { IdempotencyStore } from "./idempotency/store/idempotency.store";
 export {
-	type RmqClientConfig,
-	registerRmqClients,
-} from "./register-rmq-clients";
+	NOTIFICATION_PUBLISHER,
+	ORDER_PUBLISHER,
+	PAYMENT_PUBLISHER,
+	PUBLISHERS,
+	type PublisherName,
+} from "./publishers";
+export {
+	type RmqPublisherConfig,
+	registerRmqPublishers,
+} from "./register-rmq-publishers";
 export { settleRmqMessage } from "./settle-rmq-message";

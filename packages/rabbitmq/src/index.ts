@@ -1,17 +1,17 @@
 export {
 	QUEUE_OPTIONS,
 	RABBITMQ_URL,
-	type RmqOptionsExtra,
-	rmqOptions,
+	rmqPublisherOptions,
+	rmqWorkerOptions,
 } from "./connection";
 export { assertDurableQueue, deadLetterArguments, dlqFor } from "./dead-letter";
 export { EVENTS, type EventName } from "./events";
+export { publishFanout } from "./fanout";
 export { QUEUES, type QueueName } from "./queues";
 export {
+	deliveryCountFromHeaders,
 	MAX_RETRY_ATTEMPTS,
-	RETRY_HEADER,
 	RETRY_TTL_MS,
-	retryAttemptFromHeaders,
-	retryQueueArguments,
-	retryQueueFor,
+	workQueueArguments,
 } from "./retry";
+export { ensureBrokerQueues } from "./topology";

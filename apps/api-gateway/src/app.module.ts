@@ -1,11 +1,12 @@
 import { Module } from "@nestjs/common";
-import { ORDER_CLIENT, registerRmqClients } from "@repo/nestjs";
+import { ORDER_PUBLISHER, registerRmqPublishers } from "@repo/nestjs";
 import { QUEUES } from "@repo/rabbitmq";
 import { AppController } from "./app.controller";
 
 @Module({
-	imports: [registerRmqClients([{ name: ORDER_CLIENT, queue: QUEUES.order }])],
+	imports: [
+		registerRmqPublishers([{ name: ORDER_PUBLISHER, queue: QUEUES.order }]),
+	],
 	controllers: [AppController],
-	providers: [],
 })
 export class AppModule {}

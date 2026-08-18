@@ -1,8 +1,5 @@
-import { createRmqMicroservice } from "@repo/nestjs";
+import { createRmqMicroserviceWorker } from "@repo/nestjs";
 import { QUEUES } from "@repo/rabbitmq";
 import { AppModule } from "./app.module";
 
-void createRmqMicroservice(AppModule, QUEUES.payment, {
-	noAck: false,
-	prefetchCount: 1,
-});
+void createRmqMicroserviceWorker(AppModule, QUEUES.payment, 1);

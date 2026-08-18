@@ -14,11 +14,8 @@ import { AppService } from "./app.service";
 export class AppController {
 	constructor(private readonly appService: AppService) {}
 
-	@EventPattern(EVENTS.notification.order)
-	handleSendOrderNotification(
-		@Payload() order: Order,
-		@Ctx() context: RmqContext,
-	) {
+	@EventPattern(EVENTS.order.created)
+	handleOrderCreated(@Payload() order: Order, @Ctx() context: RmqContext) {
 		return settleRmqMessage(context, () =>
 			this.appService.handleSendOrderNotification(order),
 		);

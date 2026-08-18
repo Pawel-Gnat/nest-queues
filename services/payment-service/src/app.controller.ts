@@ -2,12 +2,12 @@ import { Controller, Inject } from "@nestjs/common";
 import {
 	ClientProxy,
 	Ctx,
-	MessagePattern,
+	EventPattern,
 	Payload,
 	type RmqContext,
 } from "@nestjs/microservices";
-import type { Order, PaymentResult } from "@repo/api/schemas";
-import { NOTIFICATION_CLIENT, settleRmqMessage } from "@repo/nestjs";
+import type { Order } from "@repo/api/schemas";
+import { NOTIFICATION_PUBLISHER, settleRmqMessage } from "@repo/nestjs";
 import { EVENTS } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
 
@@ -15,20 +15,15 @@ import { AppService } from "./app.service";
 export class AppController {
 	constructor(
 		private readonly appService: AppService,
-		@Inject(NOTIFICATION_CLIENT)
-		private readonly notificationClient: ClientProxy,
+		@Inject(NOTIFICATION_PUBLISHER)
+		private readonly notifications: ClientProxy,
 	) {}
 
-	@MessagePattern(EVENTS.payment.process)
-	handleProcessPayment(
-		@Payload() order: Order,
-		@Ctx() context: RmqContext,
-	): Promise<PaymentResult> {
+	@EventPattern(EVENTS.order.created)
+	handleOrderCreated(@Payload() order: Order, @Ctx() context: RmqContext) {
 		return settleRmqMessage(context, async () => {
 			await this.appService.charge(order);
-			this.notificationClient.emit(EVENTS.notification.payment, order);
-
-			return { ok: true, orderId: order.id };
+			this.notifications.emit(EVENTS.notification.payment, order);
 		});
 	}
 }
