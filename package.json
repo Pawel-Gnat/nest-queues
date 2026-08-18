@@ -10,7 +10,7 @@
 		"lint": "turbo run lint",
 		"format": "turbo run format",
 		"check-types": "turbo run check-types",
-		"diagram": "node scripts/generate-event-diagram.js",
+		"diagram": "d2 docs/event-flow.d2 docs/event-flow.svg",
 		"docker:up": "docker compose -f docker/docker-compose.yml up -d",
 		"docker:down": "docker compose -f docker/docker-compose.yml down",
 		"prepare": "node -e \"if (!process.env.CI) { require('child_process').execSync('lefthook install', { stdio: 'inherit' }) }\""
