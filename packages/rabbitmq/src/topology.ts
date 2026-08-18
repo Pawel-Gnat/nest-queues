@@ -1,7 +1,7 @@
 import { assertDurableQueue, dlqFor } from "./dead-letter";
-import { bindOrdersFanout } from "./fanout";
 import { QUEUES } from "./queues";
 import { workQueueArguments } from "./retry";
+import { bindOrdersTopic } from "./topic";
 
 export async function ensureBrokerQueues() {
 	for (const queue of Object.values(QUEUES)) {
@@ -9,5 +9,5 @@ export async function ensureBrokerQueues() {
 		await assertDurableQueue(dlqFor(queue));
 	}
 
-	await bindOrdersFanout();
+	await bindOrdersTopic();
 }

@@ -1,0 +1,189 @@
+# RabbitMQ topic flow — matches the code (publishTopic / ROUTING_KEYS)
+# Render: pnpm diagram-topic
+# Watch:  d2 -w docs/event-flow-topic.d2 docs/event-flow-topic.svg
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 300
+  }
+}
+
+direction: right
+
+classes: {
+  happy: {
+    style: {
+      animated: true
+      stroke-width: 2
+    }
+  }
+  retry: {
+    style: {
+      stroke-dash: 5
+      stroke: "#b45309"
+      font-color: "#b45309"
+    }
+  }
+  dlq: {
+    style: {
+      stroke-dash: 3
+      stroke: "#b91c1c"
+      font-color: "#b91c1c"
+    }
+  }
+  service: {
+    shape: hexagon
+  }
+  topic: {
+    shape: hexagon
+    style: {
+      fill: "#e0e7ff"
+    }
+  }
+  workq: {
+    shape: queue
+  }
+  deadq: {
+    shape: queue
+    style: {
+      fill: "#fee2e2"
+      stroke: "#b91c1c"
+    }
+  }
+  delay: {
+    shape: oval
+    style: {
+      fill: "#fef3c7"
+      stroke: "#b45309"
+    }
+  }
+}
+
+client: {
+  shape: person
+  label: Client
+}
+
+gateway: api-gateway {
+  class: [service]
+}
+
+rmq: RabbitMQ {
+  topic: "orders.topic" {
+    class: [topic]
+  }
+
+  order: "order (quorum)" {
+    q: order_queue {
+      class: [workq]
+    }
+    svc: order-service {
+      class: [service]
+    }
+    retry: "delayed retry\n5s × 3" {
+      class: [delay]
+    }
+    dead: order_dlq {
+      class: [deadq]
+    }
+
+    q -> svc: consume order_created {
+      class: [happy]
+    }
+    q -> retry: reject requeue {
+      class: [retry]
+    }
+    retry -> q: redeliver {
+      class: [retry]
+    }
+    q -> dead: after 3 attempts {
+      class: [dlq]
+    }
+  }
+
+  payment: "payment (quorum)" {
+    q: payment_queue {
+      class: [workq]
+    }
+    svc: payment-service {
+      class: [service]
+    }
+    retry: "delayed retry\n5s × 3" {
+      class: [delay]
+    }
+    dead: payment_dlq {
+      class: [deadq]
+    }
+
+    q -> svc: consume process_payment {
+      class: [happy]
+    }
+    q -> retry: reject requeue {
+      class: [retry]
+    }
+    retry -> q: redeliver {
+      class: [retry]
+    }
+    q -> dead: after 3 attempts {
+      class: [dlq]
+    }
+  }
+
+  notification: "notification (quorum)" {
+    q: notification_queue {
+      class: [workq]
+    }
+    svc: notification-service {
+      class: [service]
+    }
+    retry: "delayed retry\n5s × 3" {
+      class: [delay]
+    }
+    dead: notification_dlq {
+      class: [deadq]
+    }
+
+    q -> svc: "consume order_created\nconsume send_payment_notification" {
+      class: [happy]
+    }
+    q -> retry: reject requeue {
+      class: [retry]
+    }
+    retry -> q: redeliver {
+      class: [retry]
+    }
+    q -> dead: after 3 attempts {
+      class: [dlq]
+    }
+  }
+}
+
+client -> gateway: POST /api/order {
+  class: [happy]
+}
+
+gateway -> rmq.order.q: emit order_created {
+  class: [happy]
+}
+
+rmq.order.svc -> rmq.topic: "publishTopic order.created\npattern=order_created" {
+  class: [happy]
+}
+rmq.order.svc -> rmq.topic: "publishTopic payment.process\npattern=process_payment" {
+  class: [happy]
+}
+
+rmq.topic -> rmq.payment.q: bind payment.process {
+  class: [happy]
+}
+rmq.topic -> rmq.notification.q: bind order.* {
+  class: [happy]
+}
+rmq.topic -> rmq.notification.q: bind payment.completed {
+  class: [happy]
+}
+
+rmq.payment.svc -> rmq.topic: "publishTopic payment.completed\npattern=send_payment_notification" {
+  class: [happy]
+}

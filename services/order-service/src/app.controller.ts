@@ -7,7 +7,7 @@ import {
 } from "@nestjs/microservices";
 import type { Order } from "@repo/api/schemas";
 import { settleRmqMessage } from "@repo/nestjs";
-import { EVENTS, publishFanout } from "@repo/rabbitmq";
+import { EVENTS, publishTopic, ROUTING_KEYS } from "@repo/rabbitmq";
 import { AppService } from "./app.service";
 
 @Controller()
@@ -18,7 +18,16 @@ export class AppController {
 	handleOrderCreate(@Payload() order: Order, @Ctx() context: RmqContext) {
 		return settleRmqMessage(context, async () => {
 			this.appService.handleOrderCreate(order);
-			await publishFanout(EVENTS.order.created, order);
+			await publishTopic(
+				ROUTING_KEYS.orderCreated,
+				EVENTS.order.created,
+				order,
+			);
+			await publishTopic(
+				ROUTING_KEYS.paymentProcess,
+				EVENTS.payment.process,
+				order,
+			);
 		});
 	}
 }
