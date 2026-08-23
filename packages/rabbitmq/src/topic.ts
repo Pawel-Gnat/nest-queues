@@ -17,6 +17,12 @@ export async function bindProjectsTopic() {
 	await channel.assertExchange(PROJECTS_TOPIC, "topic", { durable: true });
 	await channel.bindQueue(QUEUES.task, PROJECTS_TOPIC, ROUTING_KEYS.taskCreate);
 	await channel.bindQueue(QUEUES.notification, PROJECTS_TOPIC, "*.created");
+	await channel.bindQueue(
+		QUEUES.email,
+		PROJECTS_TOPIC,
+		ROUTING_KEYS.projectCreated,
+	);
+	await channel.bindQueue(QUEUES.report, PROJECTS_TOPIC, "*.created");
 
 	await channel.close();
 	await connection.close();

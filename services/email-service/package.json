@@ -1,0 +1,41 @@
+{
+	"name": "email-service",
+	"private": true,
+	"version": "0.0.1",
+	"type": "commonjs",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "nest build",
+		"check-types": "tsc -p tsconfig.json --noEmit",
+		"format": "biome check --write .",
+		"start": "nest start",
+		"dev": "nest start --watch",
+		"lint": "biome check ."
+	},
+	"dependencies": {
+		"@nestjs/common": "catalog:",
+		"@nestjs/core": "catalog:",
+		"@nestjs/microservices": "catalog:",
+		"@nestjs/platform-express": "catalog:",
+		"@repo/api": "workspace:*",
+		"@repo/bullmq": "workspace:*",
+		"@repo/nestjs": "workspace:*",
+		"@repo/rabbitmq": "workspace:*",
+		"amqp-connection-manager": "^5.0.0",
+		"amqplib": "catalog:",
+		"reflect-metadata": "catalog:",
+		"rxjs": "catalog:"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:",
+		"@nestjs/cli": "catalog:",
+		"@nestjs/schematics": "catalog:",
+		"@repo/biome-config": "workspace:*",
+		"@repo/typescript-config": "workspace:*",
+		"@types/node": "catalog:",
+		"tsx": "^4.21.0",
+		"typescript": "catalog:"
+	}
+}

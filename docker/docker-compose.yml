@@ -14,4 +14,4 @@ services:
     container_name: queues-redis
     image: redis:7-alpine
     ports:
-      - '6380:6380'
+      - '6380:6379' # host 6380 — container Redis still listens on 6379

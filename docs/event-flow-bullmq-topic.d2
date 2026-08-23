@@ -1,0 +1,177 @@
+# Topic + BullMQ — email-service / report-service after projects.topic
+# Render: pnpm diagram-bullmq-topic
+# Watch:  d2 -w docs/event-flow-bullmq-topic.d2 docs/event-flow-bullmq-topic.svg
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 300
+  }
+}
+
+direction: right
+
+classes: {
+  happy: {
+    style: {
+      animated: true
+      stroke-width: 2
+    }
+  }
+  retry: {
+    style: {
+      stroke-dash: 5
+      stroke: "#b45309"
+      font-color: "#b45309"
+    }
+  }
+  dlq: {
+    style: {
+      stroke-dash: 3
+      stroke: "#b91c1c"
+      font-color: "#b91c1c"
+    }
+  }
+  service: {
+    shape: hexagon
+  }
+  exchange: {
+    shape: hexagon
+    style: {
+      fill: "#e0e7ff"
+    }
+  }
+  workq: {
+    shape: queue
+  }
+  deadq: {
+    shape: queue
+    style: {
+      fill: "#fee2e2"
+      stroke: "#b91c1c"
+    }
+  }
+  delay: {
+    shape: oval
+    style: {
+      fill: "#fef3c7"
+      stroke: "#b45309"
+    }
+  }
+}
+
+client: {
+  shape: person
+  label: Client
+}
+
+gateway: api-gateway {
+  class: [service]
+}
+
+projectSvc: project-service {
+  class: [service]
+}
+
+taskSvc: task-service {
+  class: [service]
+}
+
+rmq: RabbitMQ {
+  topic: "projects.topic\n(topic)" {
+    class: [exchange]
+  }
+
+  email: "email (quorum)" {
+    q: email_queue {
+      class: [workq]
+    }
+    svc: email-service {
+      class: [service]
+    }
+    retry: "delayed retry\n5s × 3" {
+      class: [delay]
+    }
+    dead: email_dlq {
+      class: [deadq]
+    }
+
+    q -> svc: consume project_created {
+      class: [happy]
+    }
+    q -> retry: reject requeue {
+      class: [retry]
+    }
+    retry -> q: redeliver {
+      class: [retry]
+    }
+    q -> dead: after 3 attempts {
+      class: [dlq]
+    }
+  }
+
+  report: "report (quorum)" {
+    q: report_queue {
+      class: [workq]
+    }
+    svc: report-service {
+      class: [service]
+    }
+    retry: "delayed retry\n5s × 3" {
+      class: [delay]
+    }
+    dead: report_dlq {
+      class: [deadq]
+    }
+
+    q -> svc: "consume project_created\nconsume task_created" {
+      class: [happy]
+    }
+    q -> retry: reject requeue {
+      class: [retry]
+    }
+    retry -> q: redeliver {
+      class: [retry]
+    }
+    q -> dead: after 3 attempts {
+      class: [dlq]
+    }
+  }
+}
+
+bullmq: Redis BullMQ {
+  emailQ: "queue email\ndelay 5s · limiter 1/5s" {
+    class: [workq]
+  }
+  reportQ: "queue report\nconcurrency 3 · priority" {
+    class: [workq]
+  }
+}
+
+client -> gateway: POST /api/project {
+  class: [happy]
+}
+gateway -> projectSvc: project_created {
+  class: [happy]
+}
+
+projectSvc -> rmq.topic: "project.created\ntask.create" {
+  class: [happy]
+}
+taskSvc -> rmq.topic: task.created {
+  class: [happy]
+}
+
+rmq.topic -> rmq.email.q: bind project.created {
+  class: [happy]
+}
+rmq.topic -> rmq.report.q: bind "*.created" {
+  class: [happy]
+}
+
+rmq.email.svc -> bullmq.emailQ: "Queue.add send-email\njobId=project_created_<id>" {
+  class: [happy]
+}
+rmq.report.svc -> bullmq.reportQ: "Queue.add project-report / task-report" {
+  class: [happy]
+}

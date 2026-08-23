@@ -1,0 +1,10 @@
+{
+	"extends": "@repo/typescript-config/nest.json",
+	"compilerOptions": {
+		"tsBuildInfoFile": "./dist/.tsbuildinfo",
+		"rootDir": "./src",
+		"outDir": "./dist"
+	},
+	"include": ["src/**/*.ts", "src/**/*.d.ts"],
+	"exclude": ["node_modules", "dist"]
+}

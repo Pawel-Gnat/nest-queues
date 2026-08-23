@@ -12,6 +12,7 @@
 		"check-types": "turbo run check-types",
 		"diagram-fanout": "d2 docs/event-flow-fanout.d2 docs/event-flow-fanout.svg",
 		"diagram-topic": "d2 docs/event-flow-topic.d2 docs/event-flow-topic.svg",
+		"diagram-bullmq-topic": "d2 docs/event-flow-bullmq-topic.d2 docs/event-flow-bullmq-topic.svg",
 		"docker:up": "docker compose -f docker/docker-compose.yml up -d",
 		"docker:down": "docker compose -f docker/docker-compose.yml down",
 		"prepare": "node -e \"if (!process.env.CI) { require('child_process').execSync('lefthook install', { stdio: 'inherit' }) }\""
