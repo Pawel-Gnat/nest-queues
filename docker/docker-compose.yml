@@ -15,3 +15,15 @@ services:
     image: redis:7-alpine
     ports:
       - '6380:6379' # host 6380 — container Redis still listens on 6379
+  workbench:
+    container_name: queues-workbench
+    image: ghcr.io/pontusab/workbench-standalone:latest
+    platform: linux/amd64
+    ports:
+      - '3003:3000'
+    environment:
+      REDIS_URL: redis://redis:6379
+      QUEUE_NAMES: email,report
+      TITLE: Queues Workbench
+    depends_on:
+      - redis
