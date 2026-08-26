@@ -49,6 +49,9 @@ export async function createBullmqRuntime<Data>(
 	const worker = new Worker<Data>(queueName, processor, {
 		connection,
 		...workerOptions,
+		metrics: {
+			maxDataPoints: 60 * 24 * 14,
+		},
 	});
 
 	attachJobLogs(worker, queueEvents, logger);
