@@ -1,0 +1,35 @@
+{
+	"name": "chat-moderator",
+	"private": true,
+	"version": "0.0.1",
+	"type": "commonjs",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "nest build",
+		"check-types": "tsc -p tsconfig.json --noEmit",
+		"format": "biome check --write .",
+		"start": "nest start",
+		"dev": "nest start --watch",
+		"lint": "biome check ."
+	},
+	"dependencies": {
+		"@nestjs/common": "catalog:",
+		"@nestjs/core": "catalog:",
+		"@repo/kafka": "workspace:*",
+		"kafkajs": "catalog:",
+		"reflect-metadata": "catalog:",
+		"rxjs": "catalog:"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:",
+		"@nestjs/cli": "catalog:",
+		"@nestjs/schematics": "catalog:",
+		"@repo/biome-config": "workspace:*",
+		"@repo/typescript-config": "workspace:*",
+		"@types/node": "catalog:",
+		"tsx": "^4.21.0",
+		"typescript": "catalog:"
+	}
+}
