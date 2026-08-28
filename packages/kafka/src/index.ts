@@ -6,4 +6,10 @@ export {
 	TOPICS,
 	type TopicName,
 } from "./constants";
+export {
+	type ChatMessage,
+	type ChatMessagePayload,
+	type ProduceResult,
+	produceChatMessage,
+} from "./produce";
 export { ensureTopic } from "./topics";
