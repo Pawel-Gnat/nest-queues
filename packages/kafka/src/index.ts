@@ -6,6 +6,7 @@ export {
 	TOPICS,
 	type TopicName,
 } from "./constants";
+export { type ChatConsumedMessage, runChatConsumer } from "./consume";
 export {
 	type ChatMessage,
 	type ChatMessagePayload,
