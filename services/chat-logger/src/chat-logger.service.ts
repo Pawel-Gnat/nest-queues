@@ -32,14 +32,7 @@ export class ChatLoggerService implements OnModuleInit, OnModuleDestroy {
 	}
 
 	private format(message: ChatConsumedMessage) {
-		let body: unknown = message.value;
-		if (message.value) {
-			try {
-				body = JSON.parse(message.value);
-			} catch {
-				body = message.value;
-			}
-		}
+		const body = JSON.parse(message.value ?? "{}");
 
 		return {
 			groupId: message.groupId,

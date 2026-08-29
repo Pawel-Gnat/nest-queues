@@ -1,0 +1,73 @@
+# Kafka chat lab — chat-api + chat-logger + chat-moderator
+# Render: pnpm diagram-kafka
+# Watch:  d2 -w docs/event-flow-kafka.d2 docs/event-flow-kafka.svg
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 300
+  }
+}
+
+direction: right
+
+classes: {
+  happy: {
+    style: {
+      animated: true
+      stroke-width: 2
+    }
+  }
+  service: {
+    shape: hexagon
+  }
+  topic: {
+    shape: cylinder
+    style: {
+      fill: "#e0e7ff"
+    }
+  }
+}
+
+client: {
+  shape: person
+  label: Client
+}
+
+chatApi: "chat-api :3001" {
+  class: [service]
+}
+
+kafka: Kafka {
+  topic: "chat.messages\n3 partitions" {
+    class: [topic]
+  }
+
+  logger: "group chat-logger" {
+    svc: chat-logger {
+      class: [service]
+    }
+  }
+
+  moderator: "group chat-moderator" {
+    svc: chat-moderator {
+      class: [service]
+    }
+  }
+}
+
+client -> chatApi: POST /chat/messages {
+  class: [happy]
+}
+
+chatApi -> kafka.topic: "produce\nkey=conversationId" {
+  class: [happy]
+}
+
+kafka.topic -> kafka.logger.svc: consume own offset {
+  class: [happy]
+}
+
+kafka.topic -> kafka.moderator.svc: consume own offset {
+  class: [happy]
+}
