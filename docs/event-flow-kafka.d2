@@ -39,7 +39,7 @@ chatApi: "chat-api :3001" {
 }
 
 kafka: Kafka {
-  topic: "chat.messages\n3 partitions" {
+  topic: chat.messages {
     class: [topic]
   }
 
