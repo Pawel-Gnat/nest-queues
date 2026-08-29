@@ -18,7 +18,7 @@ export class ChatLoggerService implements OnModuleInit, OnModuleDestroy {
 
 	async onModuleInit() {
 		this.consumer = await runChatConsumer({
-			clientId: "chat-logger",
+			clientId: process.env["LOGGER_INSTANCE"] ?? "chat-logger",
 			groupId: CONSUMER_GROUPS.logger,
 			fromBeginning: false,
 			eachMessage: (message) => {

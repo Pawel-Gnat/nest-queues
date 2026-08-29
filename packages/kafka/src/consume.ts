@@ -20,6 +20,20 @@ export async function runChatConsumer(options: {
 	const kafka = createKafka(options.clientId);
 	const consumer = kafka.consumer({ groupId: options.groupId });
 
+	consumer.on(consumer.events.GROUP_JOIN, ({ payload }) => {
+		const assigned = Object.entries(payload.memberAssignment).map(
+			([topic, partitions]) => ({ topic, partitions }),
+		);
+		console.log(
+			JSON.stringify({
+				event: "GROUP_JOIN",
+				groupId: options.groupId,
+				memberId: payload.memberId,
+				assigned,
+			}),
+		);
+	});
+
 	await consumer.connect();
 	await consumer.subscribe({
 		topic: TOPICS.chatMessages,
